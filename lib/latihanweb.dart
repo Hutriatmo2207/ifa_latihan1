@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -21,21 +22,22 @@ class _MyAppState extends State<MyApp> {
 }
 
 class FormInput extends StatefulWidget {
-  const FormInput({super.key});
+  const FormInput({Key? key}) : super(key: key);
 
   @override
   State<FormInput> createState() => _FormInputState();
 }
 
 class _FormInputState extends State<FormInput> {
-  
+  TextEditingController var_tanggal = TextEditingController();
+
   String? _jk;
   void Pilihjk(String value) {
     setState(() {
       _jk = value;
     });
   }
-  
+
   List<String> agama = [
     "islam",
     "kristen katolik",
@@ -46,6 +48,43 @@ class _FormInputState extends State<FormInput> {
   ];
 
   String _agama = "islam";
+
+  DateTime selectedDate = DateTime.now();
+
+  @override
+  void dispose() {
+    var_tanggal.dispose();
+    super.dispose();
+  }
+
+  String formatDate(DateTime date) {
+    return DateFormat('dd MM yyyy').format(date);
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2015, 8),
+      lastDate: DateTime(2101),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colors.teal,
+            hintColor: Colors.teal,
+            colorScheme: ColorScheme.light(primary: Colors.teal),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        var_tanggal.text = formatDate(selectedDate);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +104,7 @@ class _FormInputState extends State<FormInput> {
                 labelText: "Nama Lengkap",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                )
+                ),
               ),
             ),
             SizedBox(
@@ -78,7 +117,7 @@ class _FormInputState extends State<FormInput> {
                 labelText: "Password",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                )
+                ),
               ),
             ),
             SizedBox(
@@ -92,7 +131,7 @@ class _FormInputState extends State<FormInput> {
                 labelText: "Alamat",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                )
+                ),
               ),
             ),
             SizedBox(
@@ -117,7 +156,40 @@ class _FormInputState extends State<FormInput> {
               },
               activeColor: Colors.amber,
               subtitle: Text("Pilih Ini Jika Perempuan"),
-            ),            
+            ),
+            DropdownButton<String>(
+              value: _agama,
+              items: agama.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _agama = newValue!;
+                });
+              },
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            TextField(
+              controller: var_tanggal,
+              readOnly: true,
+              decoration: InputDecoration(
+                hintText: "Tanggal",
+                labelText: "Tanggal",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                suffixIcon: IconButton(
+                  onPressed: () => _selectDate(context),
+                  icon: Icon(
+                      Icons.calendar_today), // Perbaikan: Icon.calendar_today
+                ),
+              ),
+            ),
           ],
         ),
       ),
